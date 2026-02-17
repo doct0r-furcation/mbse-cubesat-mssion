@@ -1,0 +1,58 @@
+@startuml 04_uc_cubesat_use_cases
+skinparam actorBackgroundColor #D5E8D4
+skinparam actorBorderColor #27AE60
+skinparam usecaseBackgroundColor #EBF5FB
+skinparam usecaseBorderColor #2E5FA3
+skinparam ArrowColor #2E5FA3
+skinparam shadowing false
+skinparam roundcorner 10
+
+title Use Case Diagram — EO-1 CubeSat Mission\n<size:11><i>SysML UC | MBSE CubeSat Mission | Raghav Goswami</i></size>
+
+' ── Actors ───────────────────────────────────────────────────────
+actor "Mission\nOperator" as OPERATOR
+actor "Ground\nStation" as GS
+actor "End User /\nData Consumer" as USER
+actor "Sun\n(External)" as SUN
+
+' ── System boundary ──────────────────────────────────────────────
+rectangle "EO-1 CubeSat System" {
+
+  usecase "UC-01\nCapture Earth\nObservation Image" as UC01
+  usecase "UC-02\nTransmit Telemetry\nto Ground" as UC02
+  usecase "UC-03\nReceive & Execute\nGround Commands" as UC03
+  usecase "UC-04\nMaintain Nadir\nPointing Attitude" as UC04
+  usecase "UC-05\nGenerate &\nStore Power" as UC05
+  usecase "UC-06\nDownlink Image\nData to Ground" as UC06
+  usecase "UC-07\nPerform Onboard\nHealth Check" as UC07
+  usecase "UC-08\nEnter Safe\nMode" as UC08
+
+}
+
+' ── Actor associations ───────────────────────────────────────────
+OPERATOR --> UC03 : sends commands
+OPERATOR --> UC07 : monitors health
+
+GS --> UC02 : receives telemetry
+GS --> UC06 : receives image data
+GS --> UC03 : relays commands
+
+USER --> UC06 : accesses imagery
+
+SUN --> UC05 : provides solar energy
+
+' ── Include/Extend relationships ─────────────────────────────────
+UC01 .> UC04 : «include»
+UC01 .> UC05 : «include»
+UC06 .> UC02 : «include»
+UC08 .> UC07 : «extend»
+UC03 .> UC08 : «extend»
+
+note right of UC08
+  Triggered when:
+  - Battery SOC < 20%
+  - OBC temperature > 80°C
+  - Attitude error > 5°
+end note
+
+@enduml

@@ -1,0 +1,102 @@
+@startuml 07_stm_satellite_modes
+skinparam state {
+  BackgroundColor #EBF5FB
+  BorderColor #2E5FA3
+  FontColor #1A1A2E
+  ArrowColor #2E5FA3
+  StartColor #27AE60
+  EndColor #E74C3C
+}
+skinparam shadowing false
+skinparam roundcorner 10
+skinparam nodesep 60
+
+title State Machine Diagram — EO-1 CubeSat Operational Modes\n<size:11><i>SysML STM | MBSE CubeSat Mission | Raghav Goswami</i></size>
+
+[*] --> LAUNCH_DEPLOY
+
+state "LAUNCH &\nDEPLOYMENT" as LAUNCH_DEPLOY {
+  [*] --> separation
+  separation --> antenna_deploy : separation_confirmed
+  antenna_deploy --> boot_obc    : antenna_deployed
+  boot_obc --> [*]               : boot_complete
+}
+
+state "INITIALISATION" as INIT {
+  [*] --> system_check
+  system_check --> adcs_init    : self_test_passed
+  adcs_init --> comms_init      : adcs_ready
+  comms_init --> [*]             : beacon_transmitted
+}
+
+state "NOMINAL\nOPERATIONS" as NOMINAL {
+  [*] --> standby
+
+  state "STANDBY" as standby
+  state "IMAGING" as imaging {
+    [*] --> slewing
+    slewing --> capturing : attitude_stabilised
+    capturing --> storing  : image_captured
+    storing --> [*]        : image_stored
+  }
+  state "DOWNLINK" as downlink {
+    [*] --> aos
+    aos --> transmitting : link_established
+    transmitting --> los  : data_sent
+    los --> [*]           : session_closed
+  }
+
+  standby --> imaging   : imaging_command_received
+  imaging --> standby   : imaging_complete
+  standby --> downlink  : ground_station_in_view
+  downlink --> standby  : downlink_complete
+}
+
+state "SAFE MODE" as SAFE {
+  [*] --> power_save
+  power_save --> beacon_only : battery_SOC_critical
+  beacon_only --> [*]
+}
+
+state "ECLIPSE\nMODE" as ECLIPSE {
+  [*] --> battery_ops
+  battery_ops --> [*]
+}
+
+state "DEORBIT &\nEND OF LIFE" as EOL
+
+' ── Transitions ──────────────────────────────────────────────────
+LAUNCH_DEPLOY --> INIT    : boot_complete\n[system_power_on]
+
+INIT --> NOMINAL          : initialisation_complete\n[all_subsystems_nominal]
+
+NOMINAL --> SAFE          : anomaly_detected\n[battery_SOC < 20%\nOR temp_out_of_range\nOR attitude_error > 5°]
+
+SAFE --> NOMINAL          : recovery_command_received\n[system_health_restored]
+
+NOMINAL --> ECLIPSE       : eclipse_entry\n[solar_flux = 0]
+
+ECLIPSE --> NOMINAL       : sunlight_acquired\n[solar_flux > threshold]
+
+NOMINAL --> EOL           : end_of_life_command\n[mission_duration ≥ 365 days]
+
+SAFE --> EOL              : unrecoverable_fault\n[3 failed recovery attempts]
+
+EOL --> [*]
+
+note right of SAFE
+  Safe mode actions:
+  - Disable payload
+  - Disable non-essential loads
+  - Transmit beacon only
+  - Await ground commands
+end note
+
+note right of ECLIPSE
+  Eclipse mode actions:
+  - Switch to battery power
+  - Reduce power draw
+  - Maintain attitude only
+end note
+
+@enduml

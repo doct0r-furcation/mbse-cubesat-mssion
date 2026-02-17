@@ -1,0 +1,149 @@
+@startuml 01_bdd_cubesat_system
+skinparam linetype ortho
+skinparam classBackgroundColor #EBF5FB
+skinparam classBorderColor #2E5FA3
+skinparam classHeaderBackgroundColor #2E5FA3
+skinparam classHeaderFontColor #FFFFFF
+skinparam classFontColor #1A1A2E
+skinparam ArrowColor #2E5FA3
+skinparam shadowing false
+skinparam roundcorner 8
+
+title Block Definition Diagram — EO-1 CubeSat System\n<size:11><i>SysML BDD | MBSE CubeSat Mission | Raghav Goswami</i></size>
+
+' ── Top-level system block ──────────────────────────────────────
+class "«block»\nEO1_CubeSat_System" as SYS {
+  values
+    mass : Real = 2.0 kg
+    volume : Real = 2U
+    orbit_altitude : Real = 550 km
+    design_life : Real = 1.0 year
+  parts
+    eps : ElectricalPowerSubsystem
+    obc : OnBoardComputer
+    adcs : AttitudeDeterminationControlSystem
+    comms : CommunicationsSubsystem
+    payload : EarthObservationPayload
+    structure : StructuralSubsystem
+  operations
+    captureImage()
+    downlinkData()
+    maintainAttitude()
+}
+
+' ── Subsystem blocks ─────────────────────────────────────────────
+class "«block»\nElectricalPowerSubsystem" as EPS {
+  values
+    solar_panel_area : Real = 0.06 m²
+    battery_capacity : Real = 10 Wh
+    peak_power : Real = 5 W
+  parts
+    solarPanel : SolarPanel
+    battery : LiPoBattery
+    pdu : PowerDistributionUnit
+  operations
+    generatePower()
+    distributePower()
+    monitorSOC()
+}
+
+class "«block»\nOnBoardComputer" as OBC {
+  values
+    cpu_speed : Real = 400 MHz
+    ram : Real = 64 MB
+    storage : Real = 8 GB
+  operations
+    executeCommands()
+    managePayload()
+    logTelemetry()
+}
+
+class "«block»\nAttitudeDeterminationControlSystem" as ADCS {
+  values
+    pointing_accuracy : Real = 0.1 deg
+    slew_rate : Real = 5 deg/s
+  parts
+    imu : InertialMeasurementUnit
+    magnetorquer : Magnetorquer
+    reactionWheel : ReactionWheel
+  operations
+    determineAttitude()
+    controlAttitude()
+    nadir_point()
+}
+
+class "«block»\nCommunicationsSubsystem" as COMMS {
+  values
+    uplink_freq : Real = 435 MHz
+    downlink_freq : Real = 437 MHz
+    data_rate : Real = 9.6 kbps
+  parts
+    uhfAntenna : UHF_Antenna
+    transceiver : UHF_Transceiver
+  operations
+    receiveCommands()
+    transmitTelemetry()
+    downlinkPayloadData()
+}
+
+class "«block»\nEarthObservationPayload" as PAYLOAD {
+  values
+    resolution : Real = 10 m
+    swath_width : Real = 15 km
+    image_size : Real = 50 MB
+    spectral_bands : Integer = 3
+  parts
+    camera : PushbroomCamera
+    imageProcessor : ImageProcessor
+  operations
+    captureImage()
+    processImage()
+    storeImage()
+}
+
+class "«block»\nStructuralSubsystem" as STRUCT {
+  values
+    material : String = "Aluminium 6061"
+    frame_mass : Real = 0.3 kg
+  operations
+    provideHousing()
+    manageThermally()
+}
+
+' ── Composition relationships ────────────────────────────────────
+SYS *-- EPS     : "1\n«part»"
+SYS *-- OBC     : "1\n«part»"
+SYS *-- ADCS    : "1\n«part»"
+SYS *-- COMMS   : "1\n«part»"
+SYS *-- PAYLOAD : "1\n«part»"
+SYS *-- STRUCT  : "1\n«part»"
+
+' ── EPS sub-parts ────────────────────────────────────────────────
+class "«block»\nSolarPanel" as SP { }
+class "«block»\nLiPoBattery" as BAT { }
+class "«block»\nPowerDistributionUnit" as PDU { }
+EPS *-- SP  : "2\n«part»"
+EPS *-- BAT : "1\n«part»"
+EPS *-- PDU : "1\n«part»"
+
+' ── ADCS sub-parts ───────────────────────────────────────────────
+class "«block»\nInertialMeasurementUnit" as IMU { }
+class "«block»\nMagnetorquer" as MAG { }
+class "«block»\nReactionWheel" as RW { }
+ADCS *-- IMU : "1\n«part»"
+ADCS *-- MAG : "3\n«part»"
+ADCS *-- RW  : "3\n«part»"
+
+' ── COMMS sub-parts ──────────────────────────────────────────────
+class "«block»\nUHF_Antenna" as ANT { }
+class "«block»\nUHF_Transceiver" as TRX { }
+COMMS *-- ANT : "1\n«part»"
+COMMS *-- TRX : "1\n«part»"
+
+' ── PAYLOAD sub-parts ────────────────────────────────────────────
+class "«block»\nPushbroomCamera" as CAM { }
+class "«block»\nImageProcessor" as IP { }
+PAYLOAD *-- CAM : "1\n«part»"
+PAYLOAD *-- IP  : "1\n«part»"
+
+@enduml

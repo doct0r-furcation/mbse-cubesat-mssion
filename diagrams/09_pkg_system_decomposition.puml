@@ -1,0 +1,92 @@
+@startuml 09_pkg_system_decomposition
+skinparam package {
+  BackgroundColor #EBF5FB
+  BorderColor #2E5FA3
+  FontColor #1A1A2E
+}
+skinparam class {
+  BackgroundColor #FDFEFE
+  BorderColor #2E5FA3
+  HeaderBackgroundColor #2E5FA3
+  HeaderFontColor #FFFFFF
+}
+skinparam ArrowColor #2E5FA3
+skinparam shadowing false
+skinparam roundcorner 8
+
+title Package Diagram — EO-1 CubeSat Model Structure\n<size:11><i>SysML PKG | MBSE CubeSat Mission | Raghav Goswami</i></size>
+
+package "EO1_CubeSat_Mission_Model" as ROOT {
+
+  package "01_Mission_Context" as MC {
+    class "MissionObjectives" as MO
+    class "StakeholderNeeds" as SN
+    class "OperationalScenarios" as OS
+  }
+
+  package "02_Requirements" as REQ {
+    class "MissionRequirements" as MR
+    class "SystemRequirements" as SR
+    class "SubsystemRequirements" as SSR
+    class "VerificationMatrix" as VM
+  }
+
+  package "03_System_Architecture" as ARCH {
+
+    package "Structural_View" as SV {
+      class "BDD_CubeSat_System" as BDD
+      class "IBD_CubeSat_Interfaces" as IBD
+    }
+
+    package "Behavioural_View" as BV {
+      class "UC_UseCases" as UC
+      class "ACT_MissionTimeline" as ACT
+      class "SEQ_DataDownlink" as SEQ
+      class "STM_SatelliteModes" as STM
+    }
+
+    package "Parametric_View" as PV {
+      class "PAR_PowerBudget" as PAR
+      class "PAR_LinkBudget" as PLB
+      class "PAR_MassBudget" as PMB
+    }
+  }
+
+  package "04_Subsystems" as SUB {
+    class "EPS_Model" as EPS
+    class "OBC_Model" as OBC
+    class "ADCS_Model" as ADCS
+    class "COMMS_Model" as COMMS
+    class "Payload_Model" as PL
+    class "Structure_Model" as ST
+  }
+
+  package "05_Verification" as VER {
+    class "TestCases" as TC
+    class "SimulationResults" as SIM
+    class "ReviewRecords" as RR
+  }
+}
+
+' ── Dependencies ─────────────────────────────────────────────────
+MC  ..> REQ  : «refine»
+REQ ..> ARCH : «satisfy»
+ARCH ..> SUB : «allocate»
+REQ ..> VER  : «verify»
+
+SV ..> BDD : «contains»
+SV ..> IBD : «contains»
+BV ..> UC  : «contains»
+BV ..> ACT : «contains»
+BV ..> SEQ : «contains»
+BV ..> STM : «contains»
+PV ..> PAR : «contains»
+
+note bottom of ROOT
+  Model compliant with:
+  OMG SysML 1.6 specification
+  NASA Systems Engineering Handbook (SP-2016-6105)
+  INCOSE Systems Engineering Handbook v4
+end note
+
+@enduml

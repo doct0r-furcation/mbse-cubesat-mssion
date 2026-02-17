@@ -1,0 +1,56 @@
+@startuml 03_req_cubesat_requirements
+skinparam rectangle {
+  BackgroundColor #FEF9E7
+  BorderColor #F39C12
+  FontColor #1A1A2E
+}
+skinparam ArrowColor #E74C3C
+skinparam shadowing false
+skinparam roundcorner 6
+
+title Requirements Diagram — EO-1 CubeSat Mission\n<size:11><i>SysML REQ | MBSE CubeSat Mission | Raghav Goswami</i></size>
+
+' ── Mission-level requirements ───────────────────────────────────
+rectangle "«requirement»\n**REQ-001**\nMission Requirement\n----\nid = REQ-001\ntext = The EO-1 CubeSat shall\ncapture Earth observation\nimages from 550 km LEO\npriority = High" as REQ001
+
+' ── System-level requirements ────────────────────────────────────
+rectangle "«requirement»\n**REQ-002**\nImage Resolution\n----\nid = REQ-002\ntext = The payload shall achieve\nground sampling distance\n≤ 10 m\npriority = High" as REQ002
+
+rectangle "«requirement»\n**REQ-003**\nPointing Accuracy\n----\nid = REQ-003\ntext = The ADCS shall maintain\nnadir pointing accuracy\n≤ 0.1 degrees\npriority = High" as REQ003
+
+rectangle "«requirement»\n**REQ-004**\nPower Budget\n----\nid = REQ-004\ntext = The EPS shall supply\n≥ 5W continuous power\nduring sunlit phase\npriority = High" as REQ004
+
+rectangle "«requirement»\n**REQ-005**\nData Downlink\n----\nid = REQ-005\ntext = The COMMS shall downlink\n≥ 50 MB per pass\nover ground station\npriority = Medium" as REQ005
+
+rectangle "«requirement»\n**REQ-006**\nDesign Life\n----\nid = REQ-006\ntext = The system shall operate\nnominally for ≥ 1 year\nin LEO\npriority = High" as REQ006
+
+rectangle "«requirement»\n**REQ-007**\nMass Constraint\n----\nid = REQ-007\ntext = Total system mass\nshall not exceed 2.0 kg\n(2U CubeSat standard)\npriority = High" as REQ007
+
+rectangle "«requirement»\n**REQ-008**\nCommand Response\n----\nid = REQ-008\ntext = The OBC shall execute\nground commands within\n10 seconds of receipt\npriority = Medium" as REQ008
+
+' ── Derive relationships ──────────────────────────────────────────
+REQ001 .down.> REQ002 : «deriveReqt»
+REQ001 .down.> REQ003 : «deriveReqt»
+REQ001 .down.> REQ004 : «deriveReqt»
+REQ001 .down.> REQ005 : «deriveReqt»
+REQ001 .down.> REQ006 : «deriveReqt»
+REQ001 .down.> REQ007 : «deriveReqt»
+REQ001 .down.> REQ008 : «deriveReqt»
+
+' ── Satisfy relationships (blocks satisfying requirements) ────────
+rectangle "«block»\nEarthObservationPayload" as PAYLOAD
+rectangle "«block»\nAttitudeDeterminationControlSystem" as ADCS
+rectangle "«block»\nElectricalPowerSubsystem" as EPS
+rectangle "«block»\nCommunicationsSubsystem" as COMMS
+rectangle "«block»\nEO1_CubeSat_System" as SYS
+rectangle "«block»\nOnBoardComputer" as OBC
+
+PAYLOAD .up.> REQ002 : «satisfy»
+ADCS    .up.> REQ003 : «satisfy»
+EPS     .up.> REQ004 : «satisfy»
+COMMS   .up.> REQ005 : «satisfy»
+SYS     .up.> REQ006 : «satisfy»
+SYS     .up.> REQ007 : «satisfy»
+OBC     .up.> REQ008 : «satisfy»
+
+@enduml

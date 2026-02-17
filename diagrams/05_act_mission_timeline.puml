@@ -1,0 +1,87 @@
+@startuml 05_act_mission_timeline
+skinparam activity {
+  BackgroundColor #EBF5FB
+  BorderColor #2E5FA3
+  FontColor #1A1A2E
+  ArrowColor #2E5FA3
+  StartColor #27AE60
+  EndColor #E74C3C
+  DiamondBackgroundColor #FEF9E7
+  DiamondBorderColor #F39C12
+}
+skinparam shadowing false
+
+title Activity Diagram — EO-1 CubeSat Mission Timeline\n<size:11><i>SysML ACT | MBSE CubeSat Mission | Raghav Goswami</i></size>
+
+|#D5E8D4| **Ground Station**|
+|#EBF5FB| **OBC**|
+|#FEF9E7| **ADCS**|
+|#FADBD8| **Payload**|
+|#E8DAEF| **EPS**|
+
+|**Ground Station**|
+start
+:Upload mission schedule\n& imaging targets;
+
+|**OBC**|
+:Parse & validate\ncommand sequence;
+
+fork
+  |**ADCS**|
+  :Initialise attitude\ndetermination (IMU + Mag);
+  :Slew to nadir\npointing mode;
+fork again
+  |**EPS**|
+  :Monitor solar panel\noutput & battery SOC;
+  :Distribute power\nto all subsystems;
+end fork
+
+|**OBC**|
+:Check pre-image\nhealth status;
+
+if (All systems nominal?) then (yes)
+  |**ADCS**|
+  :Fine-tune pointing\nto target coordinates;
+  :Confirm attitude\nstabilised ≤ 0.1°;
+
+  |**Payload**|
+  :Open camera shutter;
+  :Capture pushbroom\nimage (RGB bands);
+  :Process & compress\nimage onboard;
+  :Store to OBC\nmemory (50 MB);
+
+  |**OBC**|
+  :Log image metadata\n& timestamp;
+
+  if (Ground station in view?) then (yes)
+    |**Ground Station**|
+    :Receive downlink\nrequest from satellite;
+
+    |**OBC**|
+    :Initiate UHF\ndownlink session;
+    :Transmit image data\n@ 9.6 kbps;
+
+    |**Ground Station**|
+    :Receive & verify\nimage data integrity;
+    :Distribute to\nend users;
+  else (no)
+    |**OBC**|
+    :Queue data for\nnext pass;
+  endif
+
+else (no — anomaly)
+  |**OBC**|
+  :Log fault condition;
+  :Enter safe mode;
+  :Transmit anomaly\ntelemetry to ground;
+
+  |**Ground Station**|
+  :Investigate &\nsend recovery commands;
+endif
+
+|**OBC**|
+:Update mission log;
+:Return to standby\n& await next task;
+stop
+
+@enduml

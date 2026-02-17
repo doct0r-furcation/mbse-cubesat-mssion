@@ -1,0 +1,81 @@
+@startuml 06_seq_data_downlink
+skinparam sequence {
+  ActorBackgroundColor #D5E8D4
+  ActorBorderColor #27AE60
+  ParticipantBackgroundColor #EBF5FB
+  ParticipantBorderColor #2E5FA3
+  ArrowColor #2E5FA3
+  LifeLineBorderColor #AAAAAA
+  LifeLineBackgroundColor #F8F9FA
+  NoteBackgroundColor #FEF9E7
+  NoteBorderColor #F39C12
+}
+skinparam shadowing false
+skinparam roundcorner 8
+
+title Sequence Diagram — Image Data Downlink\n<size:11><i>SysML SEQ | MBSE CubeSat Mission | Raghav Goswami</i></size>
+
+actor "Mission Operator" as OP
+participant "Ground Station" as GS
+participant "COMMS\nSubsystem" as COMMS
+participant "OBC" as OBC
+participant "Payload\n(Image Store)" as PL
+participant "ADCS" as ADCS
+
+== Pre-Pass Preparation ==
+
+OP -> GS : schedule_downlink_pass(AOS_time, LOS_time)
+GS -> GS : configure_antenna_tracking()
+note right of GS : AOS = Acquisition of Signal\nLOS = Loss of Signal
+
+== Acquisition of Signal (AOS) ==
+
+GS -> COMMS : establish_UHF_link(435 MHz)
+COMMS -> OBC : link_established_signal()
+OBC -> OBC : verify_link_quality()
+
+alt Link quality acceptable (SNR > 10dB)
+  OBC -> GS : send_beacon_telemetry(battery_SOC, temp, attitude)
+  GS -> OP  : display_satellite_health()
+
+  == Downlink Initiation ==
+
+  OP -> GS  : command_downlink(image_id = IMG-042)
+  GS -> COMMS : uplink_command(downlink_request)
+  COMMS -> OBC : decoded_command(downlink_request)
+  OBC -> PL : retrieve_image(IMG-042)
+  PL -> OBC : image_data[50 MB, compressed]
+
+  OBC -> ADCS : maintain_attitude_during_downlink()
+  ADCS -> OBC : attitude_confirmed(pointing_error < 0.1°)
+
+  == Data Transmission ==
+
+  loop for each 1 MB packet
+    OBC -> COMMS   : transmit_packet(sequence_no, data)
+    COMMS -> GS    : UHF_RF_transmission(437 MHz, 9.6 kbps)
+    GS -> GS       : store_packet()
+    GS -> COMMS    : send_ACK(sequence_no)
+    COMMS -> OBC   : packet_acknowledged()
+  end
+
+  == Downlink Complete ==
+
+  OBC -> COMMS : end_transmission_signal()
+  COMMS -> GS  : session_complete()
+  GS -> GS     : assemble_full_image()
+  GS -> GS     : verify_CRC_checksum()
+  GS -> OP     : downlink_complete(image_id = IMG-042, status = OK)
+
+else Link quality poor (SNR ≤ 10dB)
+  OBC -> GS  : abort_downlink(reason = poor_link_quality)
+  GS -> OP   : notify_operator(retry_next_pass)
+end
+
+== Loss of Signal (LOS) ==
+
+GS -> COMMS : terminate_UHF_session()
+OBC -> OBC  : log_downlink_event(timestamp, bytes_transferred)
+OBC -> OBC  : return_to_nominal_operations()
+
+@enduml

@@ -1,0 +1,93 @@
+@startuml 08_par_power_budget
+skinparam class {
+  BackgroundColor #EBF5FB
+  BorderColor #2E5FA3
+  HeaderBackgroundColor #2E5FA3
+  HeaderFontColor #FFFFFF
+  FontColor #1A1A2E
+  ArrowColor #E74C3C
+}
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam linetype ortho
+
+title Parametric Diagram — EO-1 Power Budget Constraint Model\n<size:11><i>SysML PAR | MBSE CubeSat Mission | Raghav Goswami</i></size>
+
+' ── Constraint blocks ─────────────────────────────────────────────
+class "«constraintBlock»\nPowerBudgetConstraint" as PBC {
+  parameters
+    P_generated : Real
+    P_consumed  : Real
+    P_margin    : Real
+  constraints
+    {P_margin = P_generated - P_consumed}
+    {P_margin ≥ 0.5 W}
+}
+
+class "«constraintBlock»\nSolarPowerModel" as SPM {
+  parameters
+    A_panel     : Real = 0.06 m²
+    η_solar     : Real = 0.28
+    G_sun       : Real = 1361 W/m²
+    DoD         : Real = 0.7
+    eclipse_frac: Real = 0.35
+  constraints
+    {P_generated = A_panel × η_solar × G_sun × (1 - eclipse_frac)}
+}
+
+class "«constraintBlock»\nLoadBudgetModel" as LBM {
+  parameters
+    P_obc     : Real = 0.8 W
+    P_adcs    : Real = 0.6 W
+    P_comms   : Real = 1.2 W
+    P_payload : Real = 1.5 W
+    P_struct  : Real = 0.1 W
+  constraints
+    {P_consumed = P_obc + P_adcs + P_comms + P_payload + P_struct}
+}
+
+class "«constraintBlock»\nBatteryConstraint" as BC {
+  parameters
+    C_battery   : Real = 10 Wh
+    DoD_max     : Real = 0.8
+    eclipse_dur : Real = 35 min
+  constraints
+    {C_available = C_battery × DoD_max}
+    {C_available ≥ P_consumed × eclipse_dur}
+}
+
+' ── Value bindings ───────────────────────────────────────────────
+class "«values»\nPowerBudgetValues" as PBV {
+  P_generated  = 2.28 W
+  P_consumed   = 4.20 W (imaging mode)
+  P_consumed   = 1.50 W (standby mode)
+  P_margin     = +0.78 W (standby)
+  P_margin     = -1.92 W (imaging — battery draw)
+  C_battery    = 10 Wh
+  eclipse_pass = 35 min @ 550 km LEO
+}
+
+' ── Connections ──────────────────────────────────────────────────
+SPM -right-> PBC : "P_generated\nbinds to"
+LBM -right-> PBC : "P_consumed\nbinds to"
+PBC -down-> BC   : "P_consumed\nbinds to"
+PBV -up-> PBC    : "«instanceValues»"
+
+note bottom of PBV
+  Key insight:
+  During imaging mode, EPS draws
+  from battery (P_margin = -1.92 W).
+  Battery must supply 1.92W × 10 min
+  = 0.32 Wh per imaging session.
+  Battery capacity (8 Wh usable) supports
+  ≥ 25 imaging sessions between charges.
+end note
+
+note top of SPM
+  Worst-case: eclipse fraction = 0.35
+  (35% of orbit in shadow at 550 km)
+  Best-case: eclipse fraction = 0.28
+  P_generated range: 2.28 W – 2.75 W
+end note
+
+@enduml

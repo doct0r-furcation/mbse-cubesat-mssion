@@ -1,0 +1,59 @@
+@startuml 02_ibd_cubesat_interfaces
+skinparam linetype ortho
+skinparam backgroundColor #FAFAFA
+skinparam rectangleBackgroundColor #EBF5FB
+skinparam rectangleBorderColor #2E5FA3
+skinparam ArrowColor #E74C3C
+skinparam shadowing false
+skinparam roundcorner 6
+
+title Internal Block Diagram — EO-1 CubeSat System Interfaces\n<size:11><i>SysML IBD | MBSE CubeSat Mission | Raghav Goswami</i></size>
+
+rectangle "«block»\n**EO1_CubeSat_System**" as SYS {
+
+  rectangle "«part»\n**eps**\nElectricalPowerSubsystem" as EPS
+  rectangle "«part»\n**obc**\nOnBoardComputer" as OBC
+  rectangle "«part»\n**adcs**\nAttitudeDeterminationControlSystem" as ADCS
+  rectangle "«part»\n**comms**\nCommunicationsSubsystem" as COMMS
+  rectangle "«part»\n**payload**\nEarthObservationPayload" as PAYLOAD
+  rectangle "«part»\n**structure**\nStructuralSubsystem" as STRUCT
+
+}
+
+' ── Power interfaces (EPS → all) ─────────────────────────────────
+EPS -right-> OBC     : "«flow»\npower_bus\n[3.3V / 5V DC]"
+EPS -right-> ADCS    : "«flow»\npower_bus\n[3.3V DC]"
+EPS -right-> COMMS   : "«flow»\npower_bus\n[5V DC]"
+EPS -right-> PAYLOAD : "«flow»\npower_bus\n[5V DC]"
+
+' ── OBC control interfaces ───────────────────────────────────────
+OBC -down-> ADCS    : "«flow»\ncommand_bus\n[I2C / UART]"
+OBC -down-> COMMS   : "«flow»\ncommand_bus\n[SPI / UART]"
+OBC -down-> PAYLOAD : "«flow»\ncommand_bus\n[LVDS]"
+
+' ── Telemetry back to OBC ────────────────────────────────────────
+ADCS    -up-> OBC : "«flow»\ntelemetry\n[attitude_data]"
+COMMS   -up-> OBC : "«flow»\ntelemetry\n[link_status]"
+PAYLOAD -up-> OBC : "«flow»\nimage_data\n[50 MB / frame]"
+EPS     -up-> OBC : "«flow»\ntelemetry\n[power_status]"
+
+' ── Structure interfaces ─────────────────────────────────────────
+STRUCT -[hidden]- EPS
+
+note bottom of COMMS
+  «interface»
+  Ground Station Link
+  Uplink: 435 MHz UHF
+  Downlink: 437 MHz UHF
+  Data Rate: 9.6 kbps
+end note
+
+note bottom of PAYLOAD
+  «interface»
+  Earth Surface
+  GSD: 10 m
+  Swath: 15 km
+  Bands: RGB
+end note
+
+@enduml
