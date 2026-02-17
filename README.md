@@ -41,7 +41,7 @@ mbse-cubesat-mission/
 ### 1. Block Definition Diagram (BDD)
 Defines the EO-1 system hierarchy — all six subsystems (EPS, OBC, ADCS, COMMS, Payload, Structure) with their properties, values, and operations.
 
-![BDD CubeSat System](diagrams/01-bdd-cubesat-system.png)
+![BDD CubeSat System](diagrams/01-bdd-cubesat-mission.png)
 
 ---
 
