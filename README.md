@@ -1,4 +1,4 @@
-# 🛰️ MBSE CubeSat Mission — EO-1 Earth Observation Satellite
+# MBSE CubeSat Mission — EO-1 Earth Observation Satellite
 
 > A complete **Model-Based Systems Engineering (MBSE)** model of a 2U CubeSat Earth observation mission, developed using SysML 1.6 and PlantUML. This project demonstrates the full SE process from mission requirements through system architecture, subsystem decomposition, interface definition, behavioural modelling, and parametric analysis.
 
@@ -46,8 +46,7 @@ Defines the EO-1 system hierarchy — all six subsystems (EPS, OBC, ADCS, COMMS,
 !include diagrams/01_bdd_cubesat_system.puml
 @enduml
 ```
-
-> 📁 [View source](diagrams/01_bdd_cubesat_system.puml)
+![BDD CubeSat System] (diagrams/01-bdd-cubesat-system.png)
 
 ---
 
