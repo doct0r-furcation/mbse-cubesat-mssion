@@ -139,7 +139,7 @@ Or use the [PlantUML online server](https://www.plantuml.com/plantuml/uml/) to r
 
 ## 👤 Author
 
-**Raghav Goswami**
+**Raghav Goswami with Significant Contributions from Anthropic's Claude AI**
 Systems Engineer | MBSE & SysML Specialist
 INCOSE ASEP | M.Engg. Systems Engineering, Cornell University
 
